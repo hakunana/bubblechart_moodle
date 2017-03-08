@@ -53,11 +53,11 @@ h4{
 	white-space: nowrap;
 }
 
-  .bar{
-    fill: #fff;
+  .bar, .blue{
+    fill: #4B92A4;
   }
 
-  .bar:hover{
+  .bar:hover, .blue:hover{
     fill: #FF5252;
   }
 

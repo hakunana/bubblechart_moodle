@@ -11,10 +11,6 @@ function loadData() {
                   realdata.push(data[i]);
                 }
             }
-
-            // var radius=0;
-            // var yAxis=realdata.length;
-            // var xAxis=answerValues.length;
             var graphics=[];
             var maxdomain=0;
             var rangeto=0;
@@ -52,18 +48,18 @@ function loadData() {
                 });
               }
               console.log(graphics);
-
             }
-console.log("rangeto "+rangeto);
+            console.log("rangeto "+rangeto);
+/* diese labels werden angezeigt - statische dummies */
+
           var ticks = [1,2,3,4];
           var tickLabels = ['a','b','c','d'];
-
+/* so hätte es eigentlich in den balken diagrammen funktioniert - allerdings console log sagt d ist keine Funktion*/
     data.forEach(function(d) {
         d.question = d.question;
         console.log("question : " + d.question);
     });
-    
-            var svgElm = d3.select('svg')
+                var svgElm = d3.select('svg')
                 .append("g")
                 .attr("transform","translate(" + 60 + "," + 10 + ")");
             var rscale = d3.scale.linear().domain([0, maxdomain])
@@ -77,6 +73,7 @@ console.log("rangeto "+rangeto);
                 .scale(xscale)
                 .orient("bottom")
                 .ticks(rangeto+1)
+                /*  Ticks erstellen  */
                 .tickValues(ticks)
                 .tickFormat(function(d,i){ return tickLabels[i] });
 
@@ -90,6 +87,7 @@ console.log("rangeto "+rangeto);
               .attr("transform", "translate(0," + 220 + ")")
               .call(xAxis)
               .selectAll("text")
+              /*  Ticks anhängen / drehen etc.   */
               .style("text-anchor", "end")
               .attr("dx", "-.8em")
               .attr("dy", "-.155em")
@@ -98,6 +96,7 @@ console.log("rangeto "+rangeto);
             svgElm.append('g')
               .attr("class", "y axis")
               .call(yAxis)
+              /*  Ticks anhängen / drehen etc.   */
               .append("text")
               .attr("transform", "rotate(-90)")
               .attr("y", 5)
@@ -109,7 +108,6 @@ console.log("rangeto "+rangeto);
             //   .html(function(d) {
             //     return "<strong>Frequency:</strong> <span style='color:red'>" + d.label + "</span>";
             //   })
-
             svgElm.selectAll('circle')
                 .data(graphics)
                 .enter()
@@ -126,24 +124,12 @@ console.log("rangeto "+rangeto);
                     .attr('cy', function (d) {
                     return yscale(d.yVal);
                 });
-                    
-
-                // .on('mouseover', tip.show)
-                // .on('mouseout', tip.hide);
-
-                // .attr("x", function(d) { return xscale(d.label); });
-
-
-            // setTimeout(loadData,10000);
+                // setTimeout(loadData,10000);
         },
         error: function (msg) { alert(msg); }
     });
 }
-
-$(document).ready(loadData);    
-
-
-
+$(document).ready(loadData);
 // $.urlParam = function(name){
 //     var results = new RegExp('[\?&]' + name + '=([^&#]*)').exec(window.location.href);
 //     if (results==null){
@@ -159,4 +145,3 @@ $(document).ready(loadData);
 
 //    });
 // */
-

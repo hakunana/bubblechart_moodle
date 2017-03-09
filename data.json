@@ -1,3 +1,3 @@
 [{"id":"23379","typ":"multichoicerated","label":"test","question":"sss","answerValues":[["0","--"],["1","-"],["2","0"],["3","+"],["4","++"]],"answers":["1","2","2","2","0","2","0","2"],"range_from":"0","range_to":"4"},
- {"id":"23380","typ":"multichoicerated","label":"bababa","question":"xxx","answerValues":[["0","--"],["1","-"],["2","0"],["3","+"],["4","++"]],"answers":["4","0","2","2","0","2","0","2"],"range_from":"0","range_to":"4"},
+ {"id":"23380","typ":"multichoicerated","label":"bababa","question":"xxx mmmm mmmm mmmm mmmm  chart","answerValues":[["0","--"],["1","-"],["2","0"],["3","+"],["4","++"]],"answers":["4","0","2","2","0","2","0","2"],"range_from":"0","range_to":"4"},
  {"id":"23380","typ":"multichoicerated","label":"lala","question":"zzz","answerValues":[["0","--"],["1","-"],["2","0"],["3","+"],["4","++"]],"answers":["4","0","2","2","0","2","0","2"],"range_from":"0","range_to":"4"}]

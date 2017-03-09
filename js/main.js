@@ -1,28 +1,67 @@
 /*document.getElementById("jstest").innerHTML = "New text!";*/
+
+function axisLabel(labelItem) {
+    return labelItem.text;
+}
+
+function renderAxis(labels, d3Item) {
+    return d3Item.selectAll('text')
+                 .data(labels)
+                 .enter()
+                 .append("text")
+                 .text(axisLabel);
+}
+
 function loadData() {
     $.ajax({
         url: "data.json",
         type: "Get",
-
+        cache: false,
         success: function (data) {
-            if (typeof data === "string") { // ensure a data array
-                data = JSON.parse(data);
-            }
-
             var i, y, j;
             var realdata = [];
             var graphics = [];
             var maxdomain = 0;
             var rangeto = 0;
 
-            // extract our questions
+            if (typeof data === "string") { // ensure a data array
+                data = JSON.parse(data);
+            }
+
+            // extract the questions from the returned data
             for (i = 0; i < data.length; i++) {
-                if (data[i].typ === "multichoicerated") {
-                  realdata.push(data[i]);
+                switch (data[i].typ) {
+                    case 'multichoicerated':
+                    case 'multichoice':
+                        realdata.push(data[i]);
+                        break;
+                    default:
+                        break;
                 }
             }
 
-            console.log("realdata length " + realdata.length);
+            // extract the axis labels
+
+            // This ONLY works if all questions have the same values!
+            // if we have different questions, then we MUST create multiple graphs
+            var xLabels = realdata[0].answerValues.map(function (d, i) {
+                return {
+                    xVal: i + 1,
+                    yVal: 0,
+                    text: Array.isArray(d)? d[1] : d
+                };
+            });
+
+            // the y lables are the questions.
+            var yLabels = realdata.map(function (d, i) {
+                return {
+                    xVal: 0,
+                    yVal:i+1,
+                    text: d.question
+                };
+            });
+
+            // analyse the responses
             for (y = 0; y < realdata.length; y++) {
                 var radius = [];
                 var valueHash = {};
@@ -32,116 +71,86 @@ function loadData() {
                     rangeto = tmpRangeTo;
                 }
 
-                console.log("realdata length 2 " + realdata[y].answerValues.length);
+                if (realdata[y].answers.length > maxdomain){
+                    maxdomain = realdata[y].answers.length;
+                }
+
                 for (j = 0; j < realdata[y].answerValues.length; j++){
                     radius.push(0);
                     valueHash[realdata[y].answerValues[j][0]] = j;
                 }
 
-                console.log("realdata length 3 " + realdata[y].answers.length);
-                if (realdata[y].answers.length > maxdomain){
-                    maxdomain=realdata[y].answers.length;
-                }
-
                 for (i = 0; i < realdata[y].answers.length; i++) {
-                    var radiusValue = realdata[y].answers[i];
-                    var radiusIndex = valueHash[radiusValue];
+                    var radiusIndex = valueHash[realdata[y].answers[i]];
                     radius[radiusIndex]++;
                 }
 
                 for (i = 0; i < radius.length; i++) {
                     graphics.push({
-                        label: realdata[y].question,
-                        yAxisLabel: y + 1,
-                        xAxisLabel: realdata[y].answerValues[i][1],
-                        rVal: radius[i] / realdata[y].answers.length * 2,
+                        rVal: radius[i],
                         xVal: i + 1,
                         yVal: y + 1
                     });
                 }
-                console.log(graphics);
             }
-            console.log("rangeto "+rangeto);
-            /* diese labels werden angezeigt - statische dummies */
 
-            var ticks = [1,2,3,4,5];
-            var tickLabels = [];
-
-            /* so hätte es eigentlich in den balken diagrammen funktioniert - allerdings console log sagt d ist keine Funktion*/
-            questions = realdata.map(function (d) { return d.question; });
-
-            // console.log(realdata[0]);
-            tickLabels = realdata[0].answerValues.map(function (d) { return d[1]; });
-            console.log(tickLabels);
-
-            var svgElm = d3.select('svg')
-                           .append("g")
-                           .attr("transform","translate(" + 60 + "," + 10 + ")");
-            var rscale = d3.scale.linear().domain([0, maxdomain])
-                           .range([0, 90]);
-            var xscale = d3.scale.linear().domain([0, rangeto+1])
-                           .range([0, 320]);
-
-        // xscale = d3.scale.ordinal().domain(tickLabels).rangeBand
-
-            var yscale = d3.scale.linear().domain([0, realdata.length+1])
+            // create d3 scale projection functions
+            var rscale = d3.scale.linear()
+                           .domain([0, maxdomain])
+                           .range([0, 30]);
+            var xscale = d3.scale.linear()
+                           .domain([0, rangeto+1])
+                           .range([0, 100 * rangeto + 10]);
+            // reverse the y axis, so 0 is in the upper corner
+            var yscale = d3.scale.linear()
+                           .domain([realdata.length + 1, 0])
                            .range([220, 0]);
-            var xlabel ="";
-            var xAxis = d3.svg.axis()
-                          .scale(xscale)
-                          .orient("bottom")
-                          .ticks(rangeto+1)
-                          /*  Ticks erstellen  */
-                          .tickValues(ticks)
-                          .tickFormat(function(d,i){ return tickLabels[i] });
 
-            var yAxis = d3.svg.axis()
-                          .scale(yscale)
-                          .orient("left")
-                          .ticks(realdata.length+1);
-                          // Circles now easily reusable
-            svgElm.append('g')
-                  .attr("class", "x axis")
-                  .attr("transform", "translate(0," + 220 + ")")
-                  .call(xAxis)
-                  .selectAll("text")
-                  /*  Ticks anhängen / drehen etc.   */
-                  .style("text-anchor", "end")
-                  .attr("dx", "-.8em")
-                  .attr("dy", "-.155em")
-                  .attr("transform", "rotate(-45)" );
-                  // .text(xAxisLabel);
-            svgElm.append('g')
-                  .attr("class", "y axis")
-                  .call(yAxis)
-                  /*  Ticks anhängen / drehen etc.   */
-                  .append("text")
-                  .attr("transform", "rotate(-90)")
-                  .attr("y", 5)
-                  .attr("dy", ".11em")
-                  .style("text-anchor", "end");
-            // var tip = d3.tip()
-            //   .attr('class', 'd3-tip')
-            //   .offset([-10, 0])
-            //   .html(function(d) {
-            //     return "<strong>Frequency:</strong> <span style='color:red'>" + d.label + "</span>";
-            //   })
-            svgElm.selectAll('circle')
-                  .data(graphics)
-                  .enter()
-                  .append('circle')
-                  .attr('class', function (d) {
-                      return "blue";
-                  })
-                  .attr('r', function (d) {
-                      return rscale(d.rVal);
-                  })
-                  .attr('cx', function (d) {
-                      return xscale(d.xVal);
-                  })
-                  .attr('cy', function (d) {
-                      return yscale(d.yVal);
-                  });
+            // add the y axis labels
+            renderAxis(yLabels,
+                       d3.select('svg')
+                         .append("g")
+                         .attr('id', "y-axis")
+                         .attr("transform","translate(20," + 10 + ")"))
+                .attr('text-anchor', 'right')
+                .attr('y', function (d, i) {
+                    return yscale(d.yVal);
+                })
+                .attr('dy', '0.3ex');
+
+            var yaxisWidth = d3.select('#y-axis').node().getBBox().width;
+
+            // add the x axis
+            renderAxis(xLabels,
+                       d3.select('svg')
+                         .append("g")
+                         .attr('id', "x-axis")
+                         .attr("transform","translate( " + (yaxisWidth + 10) + ",15)"))
+               .attr('text-anchor', 'middle')
+               .attr('x', function (d, i) {
+                   return xscale(d.xVal);
+               });
+
+           d3.select('svg')
+             .append("g")
+             .attr("transform","translate(" + (yaxisWidth + 10) + "," + 10 + ")")
+             .selectAll('circle')
+             .data(graphics) // attach the graph data
+             .enter()
+             .append('circle')
+             .attr('class', function (d) {
+                 return "blue";
+             })
+             .attr('r', function (d) {
+                 return rscale(d.rVal);
+             })
+             .attr('cx', function (d) {
+                 return xscale(d.xVal);
+             })
+             .attr('cy', function (d) {
+                 return yscale(d.yVal);
+             });
+
             // setTimeout(loadData,10000);
         },
         error: function (msg) { alert(msg); }

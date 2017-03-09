@@ -26,6 +26,7 @@ button{
 	margin:10px;
 }
 .ajax{
+        width: 100%;
 	    display: inline-block;
 }
 .nobreak{
